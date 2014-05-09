@@ -9,7 +9,9 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
+import com.thoughtworks.conference.main.ConferenceDesigner;
 import com.thoughtworks.configuration.ConfigurationService;
 import com.thoughtworks.dto.ConferenceDetails;
 import com.thoughtworks.service.ConferenceDetailsService;
@@ -21,6 +23,10 @@ public class ConferenceDetailsServiceImpl implements ConferenceDetailsService {
 
 	/** The Constant _FIVE. */
 	private static final int _FIVE = 5;
+	
+	/** The Constant LOG. */
+	private static final Logger LOG = Logger
+			.getLogger(ConferenceDetailsServiceImpl.class);
 
 
 	/*
@@ -36,12 +42,9 @@ public class ConferenceDetailsServiceImpl implements ConferenceDetailsService {
 
 		try {
 
-			String filePath = new File(StringUtils.EMPTY).getAbsolutePath();
-			System.out.println("------" + filePath);
-			BufferedReader br = new BufferedReader(new FileReader(filePath
-					+ "/config/" + fileName + ".txt"));
-			// System.out.println(filePath + "/config/" + fileName + ".txt");
-
+			String filePath = new File(StringUtils.EMPTY).getAbsolutePath()+fileName;
+			
+			BufferedReader br = new BufferedReader(new FileReader(filePath));
 			String strLine = br.readLine();
 			// Read File Line By Line
 			while (strLine != null) {
@@ -51,7 +54,7 @@ public class ConferenceDetailsServiceImpl implements ConferenceDetailsService {
 			}
 
 		} catch (Exception e) {
-			System.err.println("Error: " + e.getMessage());
+			LOG.error("Error in getTalkListFromFile:",e);
 		}
 
 		return talkList;

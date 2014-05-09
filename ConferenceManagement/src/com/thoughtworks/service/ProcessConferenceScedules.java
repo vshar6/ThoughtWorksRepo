@@ -15,4 +15,16 @@ public interface ProcessConferenceScedules {
 	 */
 	List<List<ConferenceDetails>> getScheduleConferenceTrack(
 			List<ConferenceDetails> conference) throws Exception;
+	
+	/**
+	 * Find possible comb session.
+	 *
+	 * @param conferenceList the conference list
+	 * @param totalPossibleDays the total possible days
+	 * @param morningSession the morning session
+	 * @return the list
+	 */
+	List<List<ConferenceDetails>> findPossibleCombSession(
+			List<ConferenceDetails> conferenceList, int totalPossibleDays,
+			boolean morningSession);
 }

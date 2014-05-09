@@ -26,6 +26,8 @@ public class ProcessConferenceSchedulesImpl implements ProcessConferenceScedules
 	private static final String NETWORKING_EVENT = "Networking Event";
 	/** The log. */
 	private static final Logger LOG = Logger.getLogger(ProcessConferenceSchedulesImpl.class);
+	
+	
 	/**
 	 * Schedule Conference tracks for morning and evening session.
 	 * 
@@ -43,7 +45,7 @@ public class ProcessConferenceSchedulesImpl implements ProcessConferenceScedules
 		int totalTalksTime = getTotalConferenceTime(conference);
 		int totalPossibleDays = totalTalksTime / perDayMinTime;
 
-		
+		LOG.info("Total possible days:"+totalPossibleDays);
 		List<ConferenceDetails> conferenceDetailList = new ArrayList<ConferenceDetails>();
 		conferenceDetailList.addAll(conference);
 		Collections.sort(conferenceDetailList);
@@ -116,7 +118,8 @@ public class ProcessConferenceSchedulesImpl implements ProcessConferenceScedules
 	 *            the morning session
 	 * @return the list
 	 */
-	private List<List<ConferenceDetails>> findPossibleCombSession(
+	@Override
+	public List<List<ConferenceDetails>> findPossibleCombSession(
 			List<ConferenceDetails> conferenceList, int totalPossibleDays,
 			boolean morningSession) {
 		int minSessionTimeLimit = _MORNING_SESSION_DURATION;
@@ -138,38 +141,9 @@ public class ProcessConferenceSchedulesImpl implements ProcessConferenceScedules
 			List<ConferenceDetails> possibleCombinationList = new ArrayList<ConferenceDetails>();
 
 			// Loop to get possible combination.
-			while (startPoint != confListSize) {
-				int currentCount = startPoint;
-				startPoint++;
-				ConferenceDetails currentConference = conferenceList
-						.get(currentCount);
-				if (currentConference.isScheduled()) {
-					continue;
-				}
-				int talkTime = currentConference.getDuration();
-				// If the current talk time is greater than maxSessionTimeLimit
-				// or
-				// sum of the current time and total of talk time added in list
-				// is greater than maxSessionTimeLimit.
-				// then continue.
-				if (talkTime > maxSessionTimeLimit
-						|| talkTime + totalTime > maxSessionTimeLimit) {
-					continue;
-				}
-
-				possibleCombinationList.add(currentConference);
-				totalTime += talkTime;
-
-				// If total time is completed for this session than break this
-				// loop.
-				if (morningSession) {
-					if (totalTime == maxSessionTimeLimit) {
-						break;
-					}
-				} else if (totalTime >= minSessionTimeLimit) {
-					break;
-				}
-			}
+			totalTime = updateListAndGetfinalTime(conferenceList, morningSession,
+					minSessionTimeLimit, maxSessionTimeLimit, confListSize,
+					startPoint, totalTime, possibleCombinationList);
 
 			boolean validSession = false;
 			if (morningSession) {
@@ -194,6 +168,45 @@ public class ProcessConferenceSchedulesImpl implements ProcessConferenceScedules
 		return conferenceCombinations;
 	}
 
+	private int updateListAndGetfinalTime(List<ConferenceDetails> conferenceList,
+			boolean morningSession, int minSessionTimeLimit,
+			int maxSessionTimeLimit, int confListSize, int startPoint,
+			int totalTime, List<ConferenceDetails> possibleCombinationList) {
+		while (startPoint != confListSize) {
+			int currentCount = startPoint;
+			startPoint++;
+			ConferenceDetails currentConference = conferenceList
+					.get(currentCount);
+			if (currentConference.isScheduled()) {
+				continue;
+			}
+			int talkTime = currentConference.getDuration();
+			// If the current talk time is greater than maxSessionTimeLimit
+			// or
+			// sum of the current time and total of talk time added in list
+			// is greater than maxSessionTimeLimit.
+			// then continue.
+			if (talkTime > maxSessionTimeLimit
+					|| talkTime + totalTime > maxSessionTimeLimit) {
+				continue;
+			}
+
+			possibleCombinationList.add(currentConference);
+			totalTime += talkTime;
+
+			// If total time is completed for this session than break this
+			// loop.
+			if (morningSession) {
+				if (totalTime == maxSessionTimeLimit) {
+					break;
+				}
+			} else if (totalTime >= minSessionTimeLimit) {
+				break;
+			}
+		}
+		return totalTime;
+	}
+
 	/**
 	 * Print the scheduled talks with the expected text msg.
 	 * 
@@ -214,15 +227,15 @@ public class ProcessConferenceSchedulesImpl implements ProcessConferenceScedules
 			List<ConferenceDetails> talkList = new ArrayList<ConferenceDetails>();
 
 			// Create a date and initialize start time 09:00 AM.
-			Date date = new Date();
-			SimpleDateFormat dateFormat = new SimpleDateFormat("hh:mma ");
+			final Date date = new Date();
+			final SimpleDateFormat dateFormat = new SimpleDateFormat("hh:mma ");
 			date.setHours(9);
 			date.setMinutes(0);
 			date.setSeconds(0);
 
-			int trackCount = dayCount + 1;
+			
 			String scheduledTime = dateFormat.format(date);
-
+			int trackCount = dayCount + 1;
 			LOG.info("Track " + trackCount + ":");
 
 			// Morning Session - set the scheduled time in the ConferenceDetails
